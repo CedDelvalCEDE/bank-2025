@@ -1,50 +1,40 @@
-﻿public class Person(string firstName, string lastName, DateTime birthDate) 
+﻿using person;
+using account;
+using bank;
+
+DateTime fedeBirth = new(year:2001,month:9,day:22);
+DateTime modeBirth = new(year:1995,month:7,day:14);
+
+var peopleC = new Person("Frederic", "Delvaux", fedeBirth);
+var peopleB = new Person("Molie", "Delvaux", modeBirth);
+
+var cAccount1 = new CurrentAccount("1", peopleC, 2000);
+var sAccount1 = new SavingsAccount("2", peopleC);
+var cAccount2 = new CurrentAccount("3", peopleB, 2000);
+
+try 
 {
-    public string FirstName {get; set;} = firstName;
-    public string LastName {get; set;} = lastName;
-    public DateTime BirthDate {get; set;} = birthDate;
+    cAccount1.Deposit(5000);
+    sAccount1.Deposit(23000);
+    cAccount2.Deposit(5000);
+}
+catch (InsufficientBalanceException)
+{
+    Console.WriteLine("solde inférieur au retrait.");
+}
+catch (ArgumentOutOfRangeException)
+{
+    Console.WriteLine("Depot inférieur à zero.");
 }
 
-public class CurrentAccount
-{
-    public string Number { get; set; }
-    public double Balance { get; private set; } 
-    public double CreditLine { get; set; }
-    public Person Owner { get; set; }
 
-    public void Withdraw(double amount)
-    {
-        this.Balance = this.Balance - amount;
-    }
+var ifosupBank = new Bank() { Name = "ifosup"};
 
-    public void Deposit(double amount)
-    {
-        this.Balance = this.Balance + amount;
-    }
-}
+ifosupBank.AddAccount("0",cAccount1);
+cAccount1.ApplyInteret();
+ifosupBank.AddAccount("1",sAccount1);
+sAccount1.ApplyInteret();
+ifosupBank.AddAccount("2",cAccount2);
 
-public class Bank
-{
-    public Dictionary<string, CurrentAccount> Accounts { get; private set; } = new Dictionary<string, CurrentAccount>();
-    public required string Name { get; set; }
-
-    public void AddAccount(string number, CurrentAccount account)
-    {
-        Accounts.Add(number, account);
-    }
-
-    public void DeleteAccount(string number) => Accounts.Remove(number);
-
-    public string GetRegisterOfPersonAccount(Person Owner)
-    {
-        string view = "";
-        foreach (CurrentAccount account in Accounts.Values)
-        {
-            if (account.Owner == Owner)
-            {
-                view = $"{view} \n {account.Owner} : {account.Number} => solde = {account.Balance}";
-            }
-        }
-        return view;
-    }
-}
+Console.WriteLine(ifosupBank.GetRegisterOfPersonAccount(peopleC));
+Console.WriteLine(ifosupBank.GetRegisterOfPersonAccount(peopleB));
